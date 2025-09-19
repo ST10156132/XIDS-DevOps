@@ -1,0 +1,7 @@
+$OutDir = "dist"
+New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+$ZipFile = Join-Path $OutDir ("app-{0}.zip" -f (Get-Date -Format "yyyyMMddHHmmss"))
+Compress-Archive -Path src,package.json,infra,docs -DestinationPath $ZipFile -Force
+Write-Output "Created $ZipFile"
+# create standard name
+Copy-Item $ZipFile (Join-Path $OutDir "app.zip") -Force

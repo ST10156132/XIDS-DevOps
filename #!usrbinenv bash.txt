@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+ENV="$1"   # dev | qa | prod
+ARTIFACT="$2"
+echo "Deploying $ARTIFACT to $ENV environment..."
+
+# Example: unzip and run (demo only)
+tmpdir=$(mktemp -d)
+unzip -q "$ARTIFACT" -d "$tmpdir"
+# add env-specific steps here, e.g. az webapp deploy, kubectl rollout, etc.
+echo "Files in artifact:"
+ls -la "$tmpdir"
+echo "Simulated deployment to $ENV complete."
+
+# cleanup
+rm -rf "$tmpdir"
