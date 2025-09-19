@@ -1,0 +1,23 @@
+// src/integrations/fraudEngine.js
+// Minimal stub: in develop branch this would call a real ML service / webhook.
+
+const failedLogins = {};
+
+function recordFailedLogin(username) {
+  if (!failedLogins[username]) failedLogins[username] = 0;
+  failedLogins[username]++;
+  console.log(`Failed login for ${username} (count=${failedLogins[username]})`);
+
+  // demo rule: if > 3 in 60s, emit an alert (replace with real model/hook)
+  if (failedLogins[username] >= 3) {
+    console.log(`ALERT: Possible brute force on ${username}`);
+    // TODO: integrate with notifications / dashboard
+  }
+
+  // simple timeout to decay counters (demo only)
+  setTimeout(() => {
+    failedLogins[username] = Math.max(0, (failedLogins[username] || 1) - 1);
+  }, 60 * 1000);
+}
+
+module.exports = { recordFailedLogin };
