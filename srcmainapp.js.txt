@@ -1,0 +1,40 @@
+// src/main/app.js
+const express = require('express');
+const bodyParser = require('body-parser');
+const mfa = require('../features/mfa-login');
+const fraudEngine = require('../integrations/fraudEngine');
+
+const app = express();
+app.use(bodyParser.json());
+
+app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
+
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  // TODO: replace with real auth
+  if (!username || !password) return res.status(400).json({ error: 'missing credentials' });
+
+  // stub: check credentials (mock)
+  const authenticated = (username === 'user@example.com' && password === 'password');
+  if (!authenticated) {
+    // send unsuccessful login event into fraud engine
+    fraudEngine.recordFailedLogin(username);
+    return res.status(401).json({ error: 'invalid credentials' });
+  }
+
+  // start MFA flow
+  const challenge = await mfa.sendOtp(username);
+  return res.json({ message: 'OTP sent', challengeId: challenge.id });
+});
+
+app.post('/login/verify', async (req, res) => {
+  const { username, challengeId, otp } = req.body;
+  const ok = await mfa.verifyOtp(challengeId, otp);
+  if (!ok) return res.status(401).json({ error: 'invalid otp' });
+  return res.json({ token: 'fake-jwt-token' });
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`App listening on ${port}`));
+
+module.exports = app;
